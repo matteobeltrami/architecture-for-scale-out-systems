@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scaly-backend
+  labels:
+    app: scaly-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scaly-backend
+  template:
+    metadata:
+      labels:
+        app: scaly-backend
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: scaly-backend
+          image: registry.git.chalmers.se/courses/dat490/students/2025/dat490-2025-4/scalyshop-v2-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+          env:
+            - name: MONGODB_HOST
+              value: "mongodb.scaly-manifest.svc.cluster.local"
+            - name: MONGODB_DB
+              value: "scalyDB"
+            - name: MONGODB_USER
+              value: "scaly"
+            - name: MONGODB_PW
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-scaly
+                  key: pw
+            - name: BACKEND_PORT
+              value: "5000"

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tutorial-k8s
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tutorial-k8s
+  template:
+    metadata:
+      labels:
+        app: tutorial-k8s
+    spec:
+      containers:
+      - name: kubernetes-node-tutorial
+        image: registry.git.chalmers.se/courses/dat490/students/2025/dat490-2025-4/kubernetes-node-tutorial:latest
+        ports:
+        - containerPort: 8000
+        imagePullPolicy: Always
+      imagePullSecrets:
+      - name: gitlab-registry-secret

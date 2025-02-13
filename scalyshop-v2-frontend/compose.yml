@@ -1,0 +1,50 @@
+services:
+  backend:
+    image: registry.git.chalmers.se/courses/dat490/students/2025/dat490-2025-4/scalyshop-v2-backend:latest
+    build:
+      context: ../scalyshop-v2-backend
+      platforms:
+        - linux/amd64
+    restart: on-failure
+    environment:
+      - MONGODB_HOST=database
+    platform: linux/amd64
+    ports:
+      - 5045:5045
+    networks:
+      - scalyshop2-net
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+
+  database:
+    image: mongo:8
+    restart: on-failure
+    networks:
+      - scalyshop2-net
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 1s
+    ports:
+      - 27017:27017
+
+  frontend:
+    image: registry.git.chalmers.se/courses/dat490/students/2025/dat490-2025-4/scalyshop-v2-frontend:latest
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+    platform: linux/amd64
+    depends_on:
+      backend:
+        condition: service_healthy
+        restart: true
+    restart: on-failure
+    networks:
+      - scalyshop2-net
+    ports:
+      - 8080:80
+
+networks:
+  scalyshop2-net:
